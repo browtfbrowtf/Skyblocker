@@ -46,7 +46,6 @@ import de.hysky.skyblocker.utils.scheduler.MessageScheduler;
 import de.hysky.skyblocker.utils.time.SkyblockTime;
 import de.hysky.skyblocker.utils.waypoint.Waypoint;
 import de.hysky.skyblocker.utils.ws.Service;
-import de.hysky.skyblocker.utils.ws.WsMessageHandler;
 import de.hysky.skyblocker.utils.ws.WsStateManager;
 import de.hysky.skyblocker.utils.ws.message.EggWaypointMessage;
 
@@ -208,8 +207,8 @@ public class EggFinder {
 				LOGGER.info("[Skyblocker Egg Finder] Not sharing this egg to the WebSocket - matches previous location");
 				return true;
 			}
-			WsMessageHandler.sendLocationMessage(Service.EGG_WAYPOINTS,
-					new EggWaypointMessage(eggType, eggType.egg.pos, Optional.empty()));
+			// Patched: this build never shares discovered eggs to the WebSocket.
+			// Receiving is unaffected: shared eggs are still applied in onWebsocketMessage().
 		} catch (IllegalArgumentException e) {
 			LOGGER.error("[Skyblocker Egg Finder] Failed to process an egg!", e);
 		}

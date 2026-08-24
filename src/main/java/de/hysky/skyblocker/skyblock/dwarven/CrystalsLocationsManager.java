@@ -47,7 +47,6 @@ import de.hysky.skyblocker.utils.render.primitive.PrimitiveCollector;
 import de.hysky.skyblocker.utils.scheduler.MessageScheduler;
 import de.hysky.skyblocker.utils.scheduler.Scheduler;
 import de.hysky.skyblocker.utils.ws.Service;
-import de.hysky.skyblocker.utils.ws.WsMessageHandler;
 import de.hysky.skyblocker.utils.ws.WsStateManager;
 import de.hysky.skyblocker.utils.ws.message.CrystalsWaypointMessage;
 import de.hysky.skyblocker.utils.ws.message.CrystalsWaypointSubscribeMessage;
@@ -441,10 +440,7 @@ public class CrystalsLocationsManager {
 	}
 
 	private static void trySendWaypoint2Socket(MiningLocationLabel.CrystalHollowsLocationsCategory category) {
-		if (waypointsSent2Socket.contains(category)) return;
-		if (category == MiningLocationLabel.CrystalHollowsLocationsCategory.FAIRY_GROTTO && !SkyblockerConfigManager.get().mining.crystalsWaypoints.shareFairyGrotto) return;
-
-		WsMessageHandler.sendServerMessage(Service.CRYSTAL_WAYPOINTS, new CrystalsWaypointMessage(category, CLIENT.player.blockPosition()));
-		waypointsSent2Socket.add(category);
+		// Patched: this build never publishes Crystal Hollows waypoints (Fairy Grotto & co.) to the WebSocket.
+		// Receiving is unaffected: shared waypoints are still applied in addCustomWaypointFromSocket().
 	}
 }
