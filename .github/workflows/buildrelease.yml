@@ -5,6 +5,11 @@ name: Build Release
 on:
   workflow_dispatch:
 
+# The built-in GITHUB_TOKEN can publish a release in THIS repo with contents:write,
+# so no custom API key / PAT is required.
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,3 +41,17 @@ jobs:
         with:
           name: ${{ steps.fname.outputs.result }}
           path: build/libs/
+
+      # Rolling release: reuses the fixed "latest" tag, so every run overwrites the
+      # same release and the repo's Latest release is always the freshest build.
+      - name: Publish GitHub Release (rolling "latest")
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Latest build
+          target_commitish: ${{ github.sha }}
+          files: build/libs/${{ steps.fname.outputs.result }}.jar
+          make_latest: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
