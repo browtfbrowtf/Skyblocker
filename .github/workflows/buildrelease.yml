@@ -1,9 +1,13 @@
 name: Build Release
 
 # Controls when the action will run.
-# Releases should be created manually by running this workflow.
+# Publishes a rolling "latest" release on every push to main, and can also
+# be triggered manually.
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 # The built-in GITHUB_TOKEN can publish a release in THIS repo with contents:write,
 # so no custom API key / PAT is required.
