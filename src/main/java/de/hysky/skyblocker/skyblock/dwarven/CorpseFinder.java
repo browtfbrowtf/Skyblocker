@@ -72,7 +72,8 @@ public class CorpseFinder {
 			if (!isLocationCorrect) return;
 			for (List<Corpse> corpses : corpsesByType.values()) {
 				for (Corpse corpse : corpses) {
-					if (!corpse.seen && client.player.hasLineOfSight(corpse.entity)) {
+					// Patched: this build marks corpses seen without a line-of-sight check.
+					if (!corpse.seen) {
 						setSeen(corpse);
 					}
 				}

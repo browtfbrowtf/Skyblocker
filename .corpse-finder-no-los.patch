@@ -1,0 +1,13 @@
+diff --git a/src/main/java/de/hysky/skyblocker/skyblock/dwarven/CorpseFinder.java b/src/main/java/de/hysky/skyblocker/skyblock/dwarven/CorpseFinder.java
+--- a/src/main/java/de/hysky/skyblocker/skyblock/dwarven/CorpseFinder.java
++++ b/src/main/java/de/hysky/skyblocker/skyblock/dwarven/CorpseFinder.java
+@@ -72,7 +72,8 @@
+ 			if (!isLocationCorrect) return;
+ 			for (List<Corpse> corpses : corpsesByType.values()) {
+ 				for (Corpse corpse : corpses) {
+-					if (!corpse.seen && client.player.hasLineOfSight(corpse.entity)) {
++					// Patched: this build marks corpses seen without a line-of-sight check.
++					if (!corpse.seen) {
+ 						setSeen(corpse);
+ 					}
+ 				}
