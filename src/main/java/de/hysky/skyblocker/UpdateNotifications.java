@@ -214,7 +214,14 @@ public class UpdateNotifications {
 	// kept nagging. Filter those versions out of the update check until upstream bumps the
 	// version in main (or we bump it ourselves) - then remove this filter and its call site
 	// in getOptimalVersion().
-	private static final List<SemanticVersion> PATCHED_AWAY_VERSIONS = List.of(SemanticVersion.parse("6.9.2"));
+	private static final List<SemanticVersion> PATCHED_AWAY_VERSIONS;
+	static {
+		try {
+			PATCHED_AWAY_VERSIONS = List.of(SemanticVersion.parse("6.9.2"));
+		} catch (VersionParsingException e) {
+			throw new ExceptionInInitializerError(e);
+		}
+	}
 
 	private static boolean isPatchedAwayVersion(SemanticVersion version) {
 		return PATCHED_AWAY_VERSIONS.stream().anyMatch(patched -> VERSION_COMPARATOR.compare(version, patched) == 0);
