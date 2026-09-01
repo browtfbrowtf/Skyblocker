@@ -154,6 +154,7 @@ public class UpdateNotifications {
 		// Find newer versions of the mod that align with the preferred release channels
 		List<MrVersion> eligibleModVersions = mrVersions.stream()
 				.filter(releaseVersion -> config.encompassingChannels().contains(releaseVersion.channel()))
+				.filter(releaseVersion -> !isPatchedAwayVersion(releaseVersion.version()))
 				.filter(releaseVersion -> VERSION_COMPARATOR.compare(releaseVersion.version(), currentModVersion) > 0)
 				.toList();
 
@@ -204,6 +205,19 @@ public class UpdateNotifications {
 
 			default -> false;
 		};
+	}
+
+	// Patched: TEMPORARY - hide Modrinth versions that are newer than what this build is labeled.
+	// Upstream shipped 6.9.2 from a release branch and never merged the mod_version bump back
+	// into main, so our build (and upstream's own main) is feature-6.9.2 but still labeled 6.9.1.
+	// The 6.9.2 Modrinth build is effectively what we are running, so the in-game update checker
+	// kept nagging. Filter those versions out of the update check until upstream bumps the
+	// version in main (or we bump it ourselves) - then remove this filter and its call site
+	// in getOptimalVersion().
+	private static final List<SemanticVersion> PATCHED_AWAY_VERSIONS = List.of(SemanticVersion.parse("6.9.2"));
+
+	private static boolean isPatchedAwayVersion(SemanticVersion version) {
+		return PATCHED_AWAY_VERSIONS.stream().anyMatch(patched -> VERSION_COMPARATOR.compare(version, patched) == 0);
 	}
 
 	/**
