@@ -194,7 +194,7 @@ public class WidgetManager {
 		AtomicReference<@Nullable String> error = new AtomicReference<>();
 		try (BufferedReader reader = Files.newBufferedReader(FILE)) {
 			JsonElement input = JsonParser.parseReader(reader);
-			int prevVersion = input.getAsJsonObject().get("version").getAsInt();
+			int prevVersion = input.getAsJsonObject().has("version") ? input.getAsJsonObject().get("version").getAsInt() : 1;
 
 			CONFIG = Config.DATA_FIXING_CODEC.decode(JsonOps.INSTANCE, input).resultOrPartial(error::set).orElseThrow().getFirst();
 			if (error.get() != null) { // separate it to not run when the config fully cannot load
@@ -230,6 +230,7 @@ public class WidgetManager {
 		} catch (Exception e) {
 			LOGGER.error("[Skyblocker] Failed to HUD load config: {}", error.get(), e);
 			showErrorToast();
+			ConfigBackupManager.backupConfig(ConfigBackupManager.ConfigType.HUD_WIDGETS);
 		}
 	}
 
@@ -249,8 +250,8 @@ public class WidgetManager {
 			HudWidget commissions = getWidgetOrPlaceholder("commissions");
 			HudWidget powders = getWidgetOrPlaceholder("powders");
 			EnumSet<Location> miningLocations = EnumSet.of(Location.CRYSTAL_HOLLOWS, Location.DWARVEN_MINES, Location.GLACITE_MINESHAFTS);
-			getCopyTracker().hud().getOrCreate(commissions.getInternalID()).track(miningLocations);
-			getCopyTracker().hud().getOrCreate(powders.getInternalID()).track(miningLocations);
+			getCopyTracker().hud().getOrCreate(commissions.getInternalID()).group(miningLocations);
+			getCopyTracker().hud().getOrCreate(powders.getInternalID()).group(miningLocations);
 
 			PositionRule commsRule = new PositionRule(
 					Optional.empty(),
@@ -296,7 +297,7 @@ public class WidgetManager {
 				hud.add(sweepDetails);
 				hud.serializeConfig();
 			}
-			getCopyTracker().hud().getOrCreate(sweepDetails.getInternalID()).track(SweepDetailsHudWidget.LOCATIONS);
+			getCopyTracker().hud().getOrCreate(sweepDetails.getInternalID()).group(SweepDetailsHudWidget.LOCATIONS);
 
 			// Galatea
 			editableScreenBuilder.setConfig(getScreenConfig(Location.GALATEA));
