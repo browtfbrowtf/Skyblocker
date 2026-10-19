@@ -48,9 +48,25 @@ jobs:
 
       # Rolling release: reuses the fixed "latest" tag, so every run overwrites the
       # same release and the repo's Latest release is always the freshest build.
-      # delete_assets:true drops the previous version's jar(s) first — without it,
-      # every run ADDS a new asset (name embeds the mod version) and the rolling
-      # release accumulates stale jars (6.9.1, 6.10.2, 6.10.3, 6.10.4 all piled up).
+      # The jar name embeds the mod version, so softprops can't replace stale assets
+      # (its overwrite_files only matches SAME-name assets) — delete every existing
+      # asset first, otherwise the release accumulates one jar per version forever.
+      - name: Clear stale assets on 'latest' release
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          BASE="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+          AUTH=(-H "Authorization: token ${GH_TOKEN}")
+          REL_ID="$(curl -sf "${AUTH[@]}" "${BASE}/releases/tags/latest" | jq -r '.id // empty' || true)"
+          [ -n "${REL_ID}" ] || { echo "No 'latest' release yet — nothing to clean"; exit 0; }
+          curl -sf "${AUTH[@]}" "${BASE}/releases/${REL_ID}/assets?per_page=100" \
+            | jq -r '.[].id' | while read -r aid; do
+                echo "Deleting asset ${aid}"
+                curl -sf -X DELETE "${AUTH[@]}" "${BASE}/releases/assets/${aid}" || true
+              done
+        env:
+          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
       - name: Publish GitHub Release (rolling "latest")
         uses: softprops/action-gh-release@v2
         with:
@@ -60,6 +76,5 @@ jobs:
           files: build/libs/${{ steps.fname.outputs.result }}.jar
           make_latest: true
           generate_release_notes: true
-          delete_assets: true
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
